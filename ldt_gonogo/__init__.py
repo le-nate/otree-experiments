@@ -6,7 +6,9 @@ from otree.api import *
 from otree import settings
 
 
-from ldt_core import stimuli_utils, image_utils, nonword_utils
+# from ldt_core import stimuli_utils, image_utils, nonword_utils
+from ldt_core import stimuli_utils, image_utils
+
 
 doc = """
 Lexical Decision Task.
@@ -19,15 +21,15 @@ class Constants(BaseConstants):
     num_rounds = 1
 
     """choices of responses"""
-    choices = ["word", "nonword"]
+    choices = ["go", "no-go"]
 
     """Mapping of keys to choices
     possible key names: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values
     """
-    keymap = {'Enter': 'word'}
+    keymap = {'Enter': 'go'}
 
     """A response to record automatically after trial_timeout"""
-    timeout_response = 'nonword'
+    timeout_response = 'no-go'
 
     instructions_template = __name__ + "/instructions.html"
 
@@ -35,7 +37,7 @@ class Constants(BaseConstants):
 C = Constants
 
 POOL = []
-stimuli_utils.load_csv(POOL, Path(__file__).parent / "words_top1000.csv", ['target'])
+stimuli_utils.load_csv(POOL, Path(__file__).parent / "go_nogo.csv", ['target'])
 
 
 class Subsession(BaseSubsession):
@@ -80,7 +82,7 @@ def creating_session(subsession: Subsession):
     defaults = dict(
         num_iterations=10,
         attempts_per_trial=1,
-        nonwords_proportion=0.5,
+        noGo_proportion=0.5,
         focus_display_time=500,
         stimulus_display_time=None,
         feedback_display_time=1000,
@@ -136,7 +138,7 @@ def generate_all_trials(player: Player):
     """Create `num_iterations` trials with non-repeating random stimuli"""
     params = player.session.params
     count = params['num_iterations']
-    proportion = params['nonwords_proportion']
+    proportion = params['noGo_proportion']
 
     if not count:
         raise RuntimeError("Cannot generate trials without `num_iterations`")
@@ -148,12 +150,12 @@ def generate_all_trials(player: Player):
     random.shuffle(words)
 
     for i in range(count):
-        is_nonword = random.uniform(0, 1) < proportion
+        # is_nonword = random.uniform(0, 1) < proportion
 
         target = words[i]
 
-        if is_nonword:
-            target = nonword_utils.mutate_word(target)
+        # if is_nonword:
+        #     target = nonword_utils.mutate_word(target)
 
         Trial.create(
             round=player.round_number,
@@ -161,7 +163,8 @@ def generate_all_trials(player: Player):
             iteration=1 + i,
             #
             target=target,
-            solution='nonword' if is_nonword else 'word',
+            # solution='nonword' if is_nonword else 'word',
+            solution='word',
         )
 
 
